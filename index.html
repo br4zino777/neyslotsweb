@@ -6,121 +6,527 @@
 <title>NeySlots 🎰</title>
 
 <style>
-body{margin:0;background:#071a12;color:#eafff4;font-family:Arial,Helvetica,sans-serif;display:flex;justify-content:center}
-#app{width:100%;max-width:420px;padding:12px;position:relative}
-.top{display:flex;justify-content:space-between;align-items:center}
-#saldo{font-size:18px;font-weight:bold}
-#free{font-size:14px}
-#grid{margin:14px auto;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.slot{background:#000;border-radius:10px;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.slot img{width:80%}
-.controls{display:flex;gap:8px;margin-top:8px}
-button{flex:1;padding:12px;font-size:14px;border:none;border-radius:8px;background:#00ff9c;color:#000;font-weight:bold}
-
-#goalTimeBanner{
-  position:fixed;
-  inset:0;
-  background:radial-gradient(circle at center,#0f0,#030);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  font-size:3rem;
-  color:#fff;
-  font-weight:900;
-  z-index:999;
-  animation:flashGoal 0.3s infinite alternate;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-@keyframes flashGoal{
-  from{filter:brightness(1)}
-  to{filter:brightness(1.5)}
+body {
+  background: linear-gradient(135deg, #0a1f1a 0%, #071a12 50%, #0d2419 100%);
+  min-height: 100vh;
+  color: #eafff4;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  position: relative;
+  overflow-x: hidden;
 }
 
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(0, 255, 156, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(124, 255, 203, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
 
-#line{position:absolute;height:4px;background:#00ff9c;box-shadow:0 0 10px #00ff9c;border-radius:999px;animation:draw .4s linear forwards}
-@keyframes draw{to{width:100%}}
+#app {
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  z-index: 1;
+}
 
-#winBox{position:fixed;inset:0;display:none;flex-direction:column;justify-content:center;align-items:center;background:rgba(0,0,0,.75);z-index:999}
-#winWord{font-size:36px;color:#7cffcb;text-shadow:0 0 12px #00ff9c}
-#winValue{font-size:28px;margin-top:6px}
+/* Header com stats */
+.header {
+  background: linear-gradient(135deg, rgba(0, 255, 156, 0.1) 0%, rgba(0, 255, 156, 0.05) 100%);
+  border: 1px solid rgba(0, 255, 156, 0.2);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
 
-#goalTimeOverlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.stat-box {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(0, 255, 156, 0.15);
+}
+
+.stat-label {
+  font-size: 11px;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  color: #7cffcb;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #00ff9c;
+  text-shadow: 0 0 10px rgba(0, 255, 156, 0.3);
+}
+
+.bet-box {
+  grid-column: 1 / -1;
+}
+
+/* Grid de slots */
+#grid {
+  margin: 0 auto 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 100%);
+  border-radius: 24px;
+  border: 2px solid rgba(0, 255, 156, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 2px 8px rgba(0, 255, 156, 0.1);
+}
+
+.slot {
+  background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
+  border-radius: 16px;
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid rgba(0, 255, 156, 0.15);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    inset 0 2px 4px rgba(255, 255, 255, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.slot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0, 255, 156, 0.1) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.slot:active {
+  transform: scale(0.95);
+}
+
+.slot img {
+  width: 75%;
+  height: 75%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+  transition: transform 0.3s;
+}
+
+.slot:hover img {
+  transform: scale(1.05);
+}
+
+/* Controles */
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.btn-spin {
+  grid-column: 1 / -1;
+}
+
+button {
+  padding: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #00ff9c 0%, #00d47e 100%);
+  color: #000;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 
+    0 4px 16px rgba(0, 255, 156, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+button:hover::before {
+  opacity: 1;
+}
+
+button:active {
+  transform: scale(0.96);
+  box-shadow: 
+    0 2px 8px rgba(0, 255, 156, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, rgba(0, 255, 156, 0.2) 0%, rgba(0, 255, 156, 0.1) 100%);
+  color: #00ff9c;
+  border: 1px solid rgba(0, 255, 156, 0.3);
+  font-size: 14px;
+  padding: 12px;
+}
+
+.btn-small {
+  font-size: 20px;
+  padding: 12px;
+}
+
+/* Goal Time Overlay */
+#goalTimeOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+#goalTimeBox {
+  padding: 32px;
+  border-radius: 24px;
+  border: 3px solid #00ff9c;
+  box-shadow: 
+    0 0 40px rgba(0, 255, 156, 0.5),
+    0 0 80px rgba(0, 255, 156, 0.3),
+    inset 0 2px 16px rgba(0, 255, 156, 0.1);
+  background: linear-gradient(135deg, #04120d 0%, #071a12 100%);
+  text-align: center;
+  animation: pulse 0.5s infinite alternate;
+  max-width: 90%;
+}
+
+@keyframes pulse {
+  from { 
+    transform: scale(1);
+    box-shadow: 
+      0 0 40px rgba(0, 255, 156, 0.5),
+      0 0 80px rgba(0, 255, 156, 0.3);
+  }
+  to { 
+    transform: scale(1.02);
+    box-shadow: 
+      0 0 60px rgba(0, 255, 156, 0.7),
+      0 0 100px rgba(0, 255, 156, 0.4);
+  }
+}
+
+#gtTitle {
+  font-size: 28px;
+  font-weight: 900;
+  color: #7cffcb;
+  text-shadow: 0 0 20px rgba(0, 255, 156, 0.5);
+  margin-bottom: 16px;
+}
+
+#goalTimeImage {
+  width: 120px;
+  height: 120px;
+  margin: 16px auto;
+  display: block;
+  filter: drop-shadow(0 4px 16px rgba(0, 255, 156, 0.3));
+  animation: rotate 0.6s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Win Box */
+#winBox {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-
-display:none;align-items:center;justify-content:center;z-index:1000;animation:flash .2s 6 alternate}
-@keyframes flash{from{opacity:.8}to{opacity:1}}
-#goalTimeBox{padding:22px;border-radius:16px;border:2px solid #00ff9c;box-shadow:0 0 30px #00ff9c;background:#04120d;text-align:center}
-#gtTitle{font-size:26px;color:#7cffcb}
-#gtBarWrap{margin-top:10px;height:8px;background:#123;border-radius:999px;overflow:hidden}
-#gtBar{height:100%;width:0%;background:linear-gradient(90deg,#00ff9c,#7cffcb)}
-@keyframes gtBarRun{to{width:100%}}
-
-.confetti{position:fixed;width:8px;height:8px;background:red;animation:fall 2s linear forwards}
-@keyframes fall{to{transform:translateY(100vh) rotate(360deg);opacity:0}}
-
-#rouletteOverlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:2000
+  z-index: 999;
+  animation: fadeIn 0.3s;
 }
 
-#rouletteBox{width:90%;max-width:320px;background:#03110c;border:2px solid #00ff9c;border-radius:16px;
-box-shadow:0 0 30px #00ff9c;padding:14px;text-align:center}
-#rouletteTitle{color:#7cffcb;font-size:22px;margin-bottom:8px}
-#rouletteWheel{position:relative;height:160px;overflow:hidden;border-radius:10px;background:#000;margin-bottom:10px}
-#rouletteList{position:absolute;top:0;left:0;right:0;transition:transform 3s cubic-bezier(.17,.67,.18,.97)}
-.rouletteItem{height:40px;display:flex;align-items:center;justify-content:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.05)}
-.rouletteItem img{width:26px;height:26px}
-#roulettePointer{position:absolute;left:0;right:0;top:60px;height:40px;border:2px solid #00ff9c;box-shadow:0 0 10px #00ff9c}
+#winWord {
+  font-size: 36px;
+  font-weight: 900;
+  color: #7cffcb;
+  text-shadow: 
+    0 0 20px rgba(0, 255, 156, 0.8),
+    0 0 40px rgba(0, 255, 156, 0.5);
+  margin-bottom: 12px;
+  animation: bounce 0.5s;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+#winValue {
+  font-size: 32px;
+  font-weight: 700;
+  color: #00ff9c;
+  text-shadow: 0 0 16px rgba(0, 255, 156, 0.6);
+}
+
+/* Roulette */
+#rouletteOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 16px;
+}
+
+#rouletteBox {
+  width: 100%;
+  max-width: 360px;
+  background: linear-gradient(135deg, #03110c 0%, #071a12 100%);
+  border: 2px solid #00ff9c;
+  border-radius: 24px;
+  box-shadow: 
+    0 8px 48px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(0, 255, 156, 0.3);
+  padding: 20px;
+  text-align: center;
+}
+
+#rouletteTitle {
+  color: #7cffcb;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  text-shadow: 0 0 12px rgba(0, 255, 156, 0.4);
+}
+
+#rouletteWheel {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #000;
+  margin-bottom: 16px;
+  border: 2px solid rgba(0, 255, 156, 0.2);
+  box-shadow: inset 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+#rouletteList {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  transition: transform 3s cubic-bezier(.17,.67,.18,.97);
+}
+
+.rouletteItem {
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(0, 255, 156, 0.1);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rouletteItem img {
+  width: 28px;
+  height: 28px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+#roulettePointer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 67px;
+  height: 45px;
+  border: 3px solid #00ff9c;
+  box-shadow: 
+    0 0 20px rgba(0, 255, 156, 0.6),
+    inset 0 0 20px rgba(0, 255, 156, 0.2);
+  pointer-events: none;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(0, 255, 156, 0.1) 50%, 
+    transparent 100%);
+}
+
+#rouletteBox button {
+  margin: 6px;
+}
+
+#cooldownText {
+  margin-top: 12px;
+  color: #ff6b6b;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Confetti */
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  animation: fall 2s linear forwards;
+  z-index: 9999;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Responsive */
+@media (max-width: 380px) {
+  .header {
+    padding: 16px;
+  }
+  
+  .stat-value {
+    font-size: 18px;
+  }
+  
+  #grid {
+    padding: 16px;
+    gap: 6px;
+  }
+  
+  button {
+    padding: 14px;
+    font-size: 14px;
+  }
+  
+  #winWord {
+    font-size: 28px;
+  }
+  
+  #winValue {
+    font-size: 24px;
+  }
+}
+
+@media (min-width: 768px) {
+  body {
+    padding: 32px;
+  }
+}
 </style>
 </head>
 
 <body>
 <div id="app">
-  <div class="top">
-    <div id="saldo">Saldo: 100.00</div>
-    <div id="free">Giros grátis: 0</div>
-    <div id="bet">Aposta: 1.6</div>
+  <!-- Header com stats -->
+  <div class="header">
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-label">💰 Saldo</div>
+        <div class="stat-value" id="saldo">100.00</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">🎁 Giros Grátis</div>
+        <div class="stat-value" id="free">0</div>
+      </div>
+      <div class="stat-box bet-box">
+        <div class="stat-label">🎯 Aposta Atual</div>
+        <div class="stat-value" id="bet">1.60</div>
+      </div>
+    </div>
   </div>
 
+  <!-- Grid de slots -->
   <div id="grid"></div>
 
+  <!-- Controles -->
   <div class="controls">
-    <button onclick="spin()">🎰 GIRAR</button>
-    <button onclick="openRoulette()">🎡 ROLETA</button>
-    <button onclick="toggleMute()">🔊 / 🔇</button>
-    <button onclick="changeBet(-1)">➖ Aposta</button>
-    <button onclick="changeBet(1)">➕ Aposta</button>
-
-    <button id="goalBtn" onclick="startGoalTime()" style="display:none;">⚽ GOAL TIME</button>
+    <button class="btn-spin" onclick="spin()">🎰 GIRAR</button>
+    <button class="btn-secondary" onclick="openRoulette()">🎡 Roleta</button>
+    <button class="btn-secondary" onclick="toggleMute()">🔊 Som</button>
+    <button class="btn-small btn-secondary" onclick="changeBet(-1)">➖</button>
+    <button class="btn-small btn-secondary" onclick="changeBet(1)">➕</button>
   </div>
 
+  <button id="goalBtn" class="btn-secondary" onclick="startGoalTime()" style="display:none; width: 100%; margin-top: 8px;">
+    ⚽ GOAL TIME
+  </button>
 </div>
 
+<!-- Goal Time Overlay -->
 <div id="goalTimeOverlay">
   <div id="goalTimeBox">
     <div id="gtTitle">⚽ GOAL TIME ⚽</div>
-    <img id="goalTimeImage" src="img/barcafort.png" style="width:100px;margin:10px auto;display:block">
-    <div id="gtBarWrap"><div id="gtBar"></div></div>
-
+    <img id="goalTimeImage" src="img/barcafort.png" alt="Goal Time">
   </div>
 </div>
 
+<!-- Win Box -->
 <div id="winBox">
   <div id="winWord"></div>
   <div id="winValue"></div>
 </div>
 
+<!-- Roulette Overlay -->
 <div id="rouletteOverlay">
   <div id="rouletteBox">
     <div id="rouletteTitle">🎡 ROLETA DE PRÊMIOS</div>
@@ -128,31 +534,29 @@ box-shadow:0 0 30px #00ff9c;padding:14px;text-align:center}
       <div id="rouletteList"></div>
       <div id="roulettePointer"></div>
     </div>
-    <button onclick="spinRoulette()">GIRAR ROLETA</button>
-    <button onclick="closeRoulette()">❌ FECHAR</button>
+    <button onclick="spinRoulette()">🎰 Girar Roleta</button>
+    <button class="btn-secondary" onclick="closeRoulette()">❌ Fechar</button>
     <div id="cooldownText"></div>
-</div>
-
+  </div>
 </div>
 
 <script>
 let goalTimeRolling = false;
-let freeSpinBet = null; // aposta fixa dos giros grátis
+let freeSpinBet = null;
 let goalTimeActive = false;
 let goalTimeTimer = null;
 let currentSound = null;
 let goalTimeInterval = null;
-let goalTimeSpeed = 200; // 0.2 segundos = 200ms
+let goalTimeSpeed = 200;
 
 const apostas = [0.2,0.4,0.8,1.6,3.2,6.4,12.8,25.6,51.2,102.4,204.8,409.6,819.2,1638.4,3276.8,6553.6,13107.2];
-let apostaIndex = 3; // começa em 1.6
+let apostaIndex = 3;
 let aposta = apostas[apostaIndex];
 
 let saldo = 100;
 let freeSpins = 0;
 let muted = false;
 let lastRoulette = 0;
-
 
 const goalTimeImages = [
   "img/barcafort.png",
@@ -162,81 +566,158 @@ const goalTimeImages = [
   "img/santosfort.png"
 ];
 
-const goal_time_symbols = ["⚽","🥅","🔥","💥"];
-const goal_time_weights = [50,30,15,5]; // chances
 const sounds = {
   giro: new Audio("sfx/giro.mp3"),
   gol: new Audio("sfx/gol.mp3"),
   roleta: new Audio("sfx/gol2.mp3")
 };
 
-function closeRoulette(){
-  document.getElementById("rouletteOverlay").style.display = "none";
+const symbols = [
+  {img:"img/alhilal.png", multi:1.3, name:"alhilal"},
+  {img:"img/psg.png", multi:1.495, name:"psg"},
+  {img:"img/barca.png", multi:1.85, name:"barca"},
+  {img:"img/santos.png", multi:2.4, name:"santos"},
+  {img:"img/cbf.png", multi:3, name:"cbf"}
+];
+
+const goalTimeMultipliers = {
+  alhilal: 6.5,
+  psg: 7.475,
+  barca: 9.25,
+  santos: 12,
+  cbf: 15
+};
+
+const roulettePrizes = [
+  {type:"free", text:"25 giros grátis (1.6x)", free:25, bet:1.6, chance:63.9},
+  {type:"free", text:"10 giros grátis (3.2x)", free:10, bet:3.2, chance:15},
+  {type:"free", text:"5 giros grátis (12.8x)", free:5, bet:12.8, chance:10},
+  {type:"saldo", text:"PS5", img:"img/ps5.png", value:3650, chance:5},
+  {type:"saldo", text:"iPhone 17", img:"img/iphone.png", value:11500, chance:3},
+  {type:"saldo", text:"Ninja 300", value:30990, chance:2},
+  {type:"saldo", text:"New Beetle", img:"img/newbettle.png", value:40000, chance:1},
+  {type:"saldo", text:"1kg Ouro", value:881000, chance:0.1}
+];
+
+// Criar grid
+const gridEl = document.getElementById("grid");
+for(let i=0; i<9; i++) {
+  let d = document.createElement("div");
+  d.className = "slot";
+  let img = document.createElement("img");
+  d.appendChild(img);
+  gridEl.appendChild(d);
 }
 
-function randomGoalTimePrize(){
+function randomSym() {
   return symbols[Math.floor(Math.random() * symbols.length)];
 }
 
+function randomGoalTimePrize() {
+  return symbols[Math.floor(Math.random() * symbols.length)];
+}
 
-function playSound(name){
+function playSound(name) {
   if(muted) return;
-
-  if(currentSound){
+  if(currentSound) {
     currentSound.pause();
     currentSound.currentTime = 0;
   }
   currentSound = sounds[name];
-  if(currentSound){
+  if(currentSound) {
     currentSound.play();
   }
 }
-function finishGoalTime(prize){
-  clearInterval(goalTimeInterval);
-  goalTimeInterval = null;
 
-  const slots = document.querySelectorAll(".slot img");
+function spin() {
+  if(freeSpins > 0) {
+    freeSpins--;
+    aposta = freeSpinBet;
+  } else {
+    if(saldo < aposta) return;
+    saldo -= aposta;
+  }
+
+  playSound("giro");
+
+  if(!goalTimeActive && Math.random() < 0.01) {
+    startGoalTime();
+  }
+
+  let slots = document.querySelectorAll(".slot img");
   let grid = [];
-
-  // Aplica o mesmo símbolo e o multiplicador do Goal Time em todos os slots
-  slots.forEach(img=>{
-    img.src = prize.img;
-
-    // pega o multiplicador do Goal Time se existir
-    const multi = goalTimeMultipliers[prize.name] || prize.multi;
-
-    grid.push({
-      img: prize.img,
-      multi: multi,
-      name: prize.name
-    });
+  
+  slots.forEach(el => {
+    let s = randomSym();
+    el.src = s.img;
+    grid.push(s);
   });
 
-  // Checa vitória usando os novos multiplicadores
   checkWin(grid);
-
-  setTimeout(()=>{
-    document.getElementById("goalTimeOverlay").style.display = "none";
-    goalTimeActive = false;
-    goalTimeRolling = false;
-    update();
-  }, 1200);
+  
+  if(freeSpins === 0) {
+    freeSpinBet = null;
+  }
+  
+  update();
 }
 
+function checkWin(g) {
+  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,4,8],[2,4,6]];
+  wins.forEach(w => {
+    if(g[w[0]].img === g[w[1]].img && g[w[1]].img === g[w[2]].img) {
+      let multi = g[w[0]].multi;
+      let ganho = aposta * multi;
+      saldo += ganho;
+      playSound("gol");
+      confetti();
+      showWin(ganho, multi);
+    }
+  });
+  update();
+}
 
+function showWin(valor, multi) {
+  const box = document.getElementById("winBox");
+  const word = document.getElementById("winWord");
+  const val = document.getElementById("winValue");
+  
+  let txt = "Gol!";
+  if(multi > 2.25) txt = "Super Gol!";
+  if(multi > 2.75) txt = "Mega Gol!";
+  if(multi > 3.5) txt = "Ultra Gol!";
+  if(multi > 5) txt = "GOLEADA!";
+  
+  let current = 0;
+  let target = valor;
+  
+  word.innerText = "VOCÊ GANHOU! " + txt;
+  box.style.display = "flex";
+  
+  let anim = setInterval(() => {
+    current += target / 30;
+    if(current >= target) {
+      current = target;
+      clearInterval(anim);
+    }
+    val.innerText = "⚽ " + current.toFixed(2);
+  }, 30);
+  
+  setTimeout(() => box.style.display = "none", 2200);
+}
 
-
-
-function weightedPick(list, weights){
-  const total = weights.reduce((a,b)=>a+b,0);
-  let r = Math.random() * total;
-  for(let i=0;i<list.length;i++){
-    if(r < weights[i]) return list[i];
-    r -= weights[i];
+function confetti() {
+  for(let i=0; i<40; i++) {
+    let c = document.createElement("div");
+    c.className = "confetti";
+    c.style.left = Math.random() * 100 + "vw";
+    c.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 2000);
   }
 }
 
-function startGoalTime(){
+function startGoalTime() {
   if(goalTimeRolling) return;
 
   goalTimeRolling = true;
@@ -250,50 +731,45 @@ function startGoalTime(){
 
   let imgIndex = 0;
 
-  // troca imagem a cada 0.2s
-  goalTimeInterval = setInterval(()=>{
+  goalTimeInterval = setInterval(() => {
     imgEl.src = goalTimeImages[imgIndex];
     imgIndex = (imgIndex + 1) % goalTimeImages.length;
   }, goalTimeSpeed);
 
-  // gira até ganhar
   rollGoalTime();
 }
 
-function rollGoalTime(){
-  setTimeout(()=>{
+function rollGoalTime() {
+  setTimeout(() => {
     let prize = randomGoalTimePrize();
-
-    if(!prize){
+    if(!prize) {
       rollGoalTime();
     } else {
       finishGoalTime(prize);
     }
-  }, 900); // mais lento
+  }, 900);
 }
-function finishGoalTime(prize){
+
+function finishGoalTime(prize) {
   clearInterval(goalTimeInterval);
   goalTimeInterval = null;
 
   const slots = document.querySelectorAll(".slot img");
   let grid = [];
 
-  slots.forEach(img=>{
-    img.src = prize.img; // muda a imagem
+  slots.forEach(img => {
+    img.src = prize.img;
     grid.push({
       img: prize.img,
-      multi: goalTimeMultipliers[prize.name], // aplica multiplicador do GT
+      multi: goalTimeMultipliers[prize.name],
       name: prize.name
     });
   });
 
-  // Checa vitória usando os multiplicadores do GT
   checkWin(grid);
-
   confetti();
-  playSound("gol");
 
-  setTimeout(()=>{
+  setTimeout(() => {
     document.getElementById("goalTimeOverlay").style.display = "none";
     goalTimeActive = false;
     goalTimeRolling = false;
@@ -301,163 +777,46 @@ function finishGoalTime(prize){
   }, 1200);
 }
 
-
-
-
-
-
-const symbols = [
- {img:"img/alhilal.png", multi:1.3, name:"alhilal"},
- {img:"img/psg.png", multi:1.495, name:"psg"},
- {img:"img/barca.png", multi:1.85, name:"barca"},
- {img:"img/santos.png", multi:2.4, name:"santos"},
- {img:"img/cbf.png", multi:3, name:"cbf"}
-];
-
-
-
-const goalTimeMultipliers = {
-  alhilal: 6.5,
-  psg: 7.475,
-  barca: 9.25,
-  santos: 12,
-  cbf: 15
-};
-
-
-const roulettePrizes=[
- {type:"free", text:"25 giros grátis (1.6x)", free:25, bet:1.6, chance:63.9},
- {type:"free", text:"10 giros grátis (3.2x)", free:10, bet:3.2, chance:15},
- {type:"free", text:"5 giros grátis (12.8x)", free:5, bet:12.8, chance:10},
- {type:"saldo", text:"PS5", img:"img/ps5.png", value:3650, chance:5},
- {type:"saldo", text:"iPhone 17", img:"img/iphone.png", value:11500, chance:3},
- {type:"saldo", text:"Ninja 300", value:30990, chance:2},
- {type:"saldo", text:"New Beetle", img:"img/newbettle.png", value:40000, chance:1},
- {type:"saldo", text:"1kg Ouro", value:881000, chance:0.1}
-];
-
-// mark
-
-const gridEl=document.getElementById("grid");
-for(let i=0;i<9;i++){let d=document.createElement("div");d.className="slot";let img=document.createElement("img");d.appendChild(img);gridEl.appendChild(d);}
-
-function randomSym(){return symbols[Math.floor(Math.random()*symbols.length)];}
-
-function spin(){
-  // Se tiver giros grátis
-  if(freeSpins > 0){
-    freeSpins--;
-
-    // força a aposta do free spin
-    aposta = freeSpinBet;
-  } else {
-    // giro normal
-    if(saldo < aposta) return;
-    saldo -= aposta;
-  }
-
-  playSound("giro");
-
-  if(!goalTimeActive && Math.random() < 0.01){
-    startGoalTime();
-  }
-
-  let slots=document.querySelectorAll(".slot img"),grid=[];
-  slots.forEach(el=>{
-    let s=randomSym();
-    el.src=s.img;
-    grid.push(s);
-  });
-
-  checkWin(grid);
-  if(freeSpins === 0){
-  freeSpinBet = null;
-  }
-  update();
-}
-
-
-
-function checkWin(g){
- const wins=[[0,1,2],[3,4,5],[6,7,8],[0,4,8],[2,4,6]];
- wins.forEach(w=>{
-  if(g[w[0]].img===g[w[1]].img && g[w[1]].img===g[w[2]].img){
-    let multi=g[w[0]].multi,ganho=aposta*multi;
-    saldo+=ganho;playSound("gol");confetti();showWin(ganho,multi);
-  }
- });
- update();
-}
-
-function checkWinGoalTime(g){
-  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,4,8],[2,4,6]];
-  for(let w of wins){
-    if(g[w[0]].img===g[w[1]].img && g[w[1]].img===g[w[2]].img){
-      let multi = g[w[0]].multi;
-      let ganho = aposta * multi;
-      saldo += ganho;
-      playSound("gol");
-      confetti();
-      showWin(ganho, multi);
-      update();
-      return true; // achou vitória → para o goal time
-    }
-  }
-  return false;
-}
-
-
-function showWin(valor,multi){
- const box=document.getElementById("winBox"),word=document.getElementById("winWord"),val=document.getElementById("winValue");
- let txt="Gol!";if(multi>2.25)txt="Super Gol!";if(multi>2.75)txt="Mega Gol!";if(multi>3.5)txt="Ultra Gol!";if(multi>5)txt="GOLEADA!";
- let current=0,target=valor;word.innerText="VOCÊ GANHOU! "+txt;box.style.display="flex";
- let anim=setInterval(()=>{current+=target/30;if(current>=target){current=target;clearInterval(anim);}val.innerText="⚽ "+current.toFixed(2);},30);
- setTimeout(()=>box.style.display="none",2200);
-}
-
-function confetti(){
- for(let i=0;i<40;i++){
-  let c=document.createElement("div");c.className="confetti";
-  c.style.left=Math.random()*100+"vw";c.style.background=`hsl(${Math.random()*360},100%,50%)`;
-  document.body.appendChild(c);setTimeout(()=>c.remove(),2000);
- }
-}
-
-const rouletteList=document.getElementById("rouletteList");
-roulettePrizes.forEach(p=>{
- let d=document.createElement("div");d.className="rouletteItem";
- d.innerHTML=(p.img?`<img src="${p.img}">`:"")+`<span>${p.text}</span>`;
- rouletteList.appendChild(d);
+// Roulette
+const rouletteList = document.getElementById("rouletteList");
+roulettePrizes.forEach(p => {
+  let d = document.createElement("div");
+  d.className = "rouletteItem";
+  d.innerHTML = (p.img ? `<img src="${p.img}">` : "") + `<span>${p.text}</span>`;
+  rouletteList.appendChild(d);
 });
-// Duplica para efeito infinito
-for(let k=0;k<6;k++){
-  roulettePrizes.forEach(p=>{
-    let d=document.createElement("div");
-    d.className="rouletteItem";
-    d.innerHTML=(p.img?`<img src="${p.img}">`:"")+`<span>${p.text}</span>`;
+
+for(let k=0; k<6; k++) {
+  roulettePrizes.forEach(p => {
+    let d = document.createElement("div");
+    d.className = "rouletteItem";
+    d.innerHTML = (p.img ? `<img src="${p.img}">` : "") + `<span>${p.text}</span>`;
     rouletteList.appendChild(d);
   });
 }
 
+function openRoulette() {
+  const now = Date.now();
+  const diff = now - lastRoulette;
+  
+  if(diff < 300000) {
+    let sec = Math.ceil((300000 - diff) / 1000);
+    document.getElementById("cooldownText").innerText = "Aguarde " + sec + "s";
+    document.getElementById("rouletteOverlay").style.display = "flex";
+    return;
+  }
+  
+  document.getElementById("cooldownText").innerText = "";
+  document.getElementById("rouletteOverlay").style.display = "flex";
+}
 
-
-
-function openRoulette(){
- const now=Date.now();
- const diff=now-lastRoulette;
- if(diff<300000){
-   let sec=Math.ceil((300000-diff)/1000);
-   document.getElementById("cooldownText").innerText="Aguarde "+sec+"s";
-   document.getElementById("rouletteOverlay").style.display="flex";
-   return;
- }
- document.getElementById("cooldownText").innerText="";
- document.getElementById("rouletteOverlay").style.display="flex";
+function closeRoulette() {
+  document.getElementById("rouletteOverlay").style.display = "none";
 }
 
 let rouletteOffset = 0;
 
-function spinRoulette(){
+function spinRoulette() {
   const now = Date.now();
   if(now - lastRoulette < 300000) return;
 
@@ -466,38 +825,40 @@ function spinRoulette(){
 
   const list = document.getElementById("rouletteList");
 
-  // Sorteio com peso
-  let total = roulettePrizes.reduce((s,p)=>s+p.chance,0);
-  let r = Math.random() * total, acc = 0, prize = null;
-  for(let p of roulettePrizes){
+  let total = roulettePrizes.reduce((s, p) => s + p.chance, 0);
+  let r = Math.random() * total;
+  let acc = 0;
+  let prize = null;
+  
+  for(let p of roulettePrizes) {
     acc += p.chance;
-    if(r <= acc){ prize = p; break; }
+    if(r <= acc) {
+      prize = p;
+      break;
+    }
   }
 
   const prizeIndex = roulettePrizes.indexOf(prize);
-  const itemHeight = 40;
+  const itemHeight = 45;
   const totalItems = roulettePrizes.length * 6;
   const centerBase = Math.floor(totalItems / 2);
 
-  // Calcula nova posição
   rouletteOffset = (centerBase + prizeIndex) * itemHeight;
 
-  // Reset invisível
   list.style.transition = "none";
   list.style.transform = `translateY(-${rouletteOffset}px)`;
   list.offsetHeight;
 
-  // Agora gira mais algumas voltas
   const extraLoops = 3 * roulettePrizes.length * itemHeight;
   list.style.transition = "transform 3s cubic-bezier(.17,.67,.18,.97)";
   list.style.transform = `translateY(-${rouletteOffset + extraLoops}px)`;
 
-  setTimeout(()=>{
-    if(prize.type === "free"){
+  setTimeout(() => {
+    if(prize.type === "free") {
       freeSpins += prize.free;
       freeSpinBet = prize.bet;
       aposta = prize.bet;
- }else{
+    } else {
       saldo += prize.value;
     }
 
@@ -506,42 +867,43 @@ function spinRoulette(){
   }, 3000);
 }
 
-
-function update(){
- document.getElementById("saldo").innerText="Saldo: "+saldo.toFixed(2);
- document.getElementById("free").innerText="Giros grátis: "+freeSpins;
- document.getElementById("bet").innerText = "Aposta: " + aposta.toFixed(2);
+function update() {
+  document.getElementById("saldo").innerText = saldo.toFixed(2);
+  document.getElementById("free").innerText = freeSpins;
+  document.getElementById("bet").innerText = aposta.toFixed(2);
 }
 
-function changeBet(dir){
-  if(freeSpins > 0) return; // bloqueia mudar aposta durante giros grátis
+function changeBet(dir) {
+  if(freeSpins > 0) return;
+  
   apostaIndex += dir;
   if(apostaIndex < 0) apostaIndex = 0;
-  if(apostaIndex >= apostas.length) apostaIndex = apostas.length-1;
+  if(apostaIndex >= apostas.length) apostaIndex = apostas.length - 1;
+  
   aposta = apostas[apostaIndex];
   update();
 }
 
-
-function toggleMute(){
+function toggleMute() {
   muted = !muted;
-  document.querySelector('.controls button:nth-child(3)').innerText = muted ? "🔇" : "🔊";
+  document.querySelector('.controls button:nth-child(2)').innerText = muted ? "🔇 Som" : "🔊 Som";
 }
 
-
-document.addEventListener("keydown", e=>{
-  if(e.key.toLowerCase() === "p"){
+document.addEventListener("keydown", e => {
+  if(e.key.toLowerCase() === "p") {
     startGoalTime();
   }
 });
-// Mostrar botão GOAL TIME só no mobile
-function isMobile(){
+
+function isMobile() {
   return /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
 }
 
-if(isMobile()){
+if(isMobile()) {
   document.getElementById("goalBtn").style.display = "block";
 }
+
+update();
 </script>
 </body>
 </html>
