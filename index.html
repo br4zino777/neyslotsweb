@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeySlots 🎰</title>
+
+<style>
+body{margin:0;background:#071a12;color:#eafff4;font-family:Arial,Helvetica,sans-serif;display:flex;justify-content:center}
+#app{width:100%;max-width:420px;padding:12px;position:relative}
+.top{display:flex;justify-content:space-between;align-items:center}
+#saldo{font-size:18px;font-weight:bold}
+#free{font-size:14px}
+#grid{margin:14px auto;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.slot{background:#000;border-radius:10px;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.slot img{width:80%}
+.controls{display:flex;gap:8px;margin-top:8px}
+button{flex:1;padding:12px;font-size:14px;border:none;border-radius:8px;background:#00ff9c;color:#000;font-weight:bold}
+
+#goalTimeBanner{
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle at center,#0f0,#030);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-size:3rem;
+  color:#fff;
+  font-weight:900;
+  z-index:999;
+  animation:flashGoal 0.3s infinite alternate;
+}
+
+@keyframes flashGoal{
+  from{filter:brightness(1)}
+  to{filter:brightness(1.5)}
+}
+
+
+#line{position:absolute;height:4px;background:#00ff9c;box-shadow:0 0 10px #00ff9c;border-radius:999px;animation:draw .4s linear forwards}
+@keyframes draw{to{width:100%}}
+
+#winBox{position:fixed;inset:0;display:none;flex-direction:column;justify-content:center;align-items:center;background:rgba(0,0,0,.75);z-index:999}
+#winWord{font-size:36px;color:#7cffcb;text-shadow:0 0 12px #00ff9c}
+#winValue{font-size:28px;margin-top:6px}
+
+#goalTimeOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+display:none;align-items:center;justify-content:center;z-index:1000;animation:flash .2s 6 alternate}
+@keyframes flash{from{opacity:.8}to{opacity:1}}
+#goalTimeBox{padding:22px;border-radius:16px;border:2px solid #00ff9c;box-shadow:0 0 30px #00ff9c;background:#04120d;text-align:center}
+#gtTitle{font-size:26px;color:#7cffcb}
+#gtBarWrap{margin-top:10px;height:8px;background:#123;border-radius:999px;overflow:hidden}
+#gtBar{height:100%;width:0%;background:linear-gradient(90deg,#00ff9c,#7cffcb)}
+@keyframes gtBarRun{to{width:100%}}
+
+.confetti{position:fixed;width:8px;height:8px;background:red;animation:fall 2s linear forwards}
+@keyframes fall{to{transform:translateY(100vh) rotate(360deg);opacity:0}}
+
+#rouletteOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:2000
+}
+
+#rouletteBox{width:90%;max-width:320px;background:#03110c;border:2px solid #00ff9c;border-radius:16px;
+box-shadow:0 0 30px #00ff9c;padding:14px;text-align:center}
+#rouletteTitle{color:#7cffcb;font-size:22px;margin-bottom:8px}
+#rouletteWheel{position:relative;height:160px;overflow:hidden;border-radius:10px;background:#000;margin-bottom:10px}
+#rouletteList{position:absolute;top:0;left:0;right:0;transition:transform 3s cubic-bezier(.17,.67,.18,.97)}
+.rouletteItem{height:40px;display:flex;align-items:center;justify-content:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.05)}
+.rouletteItem img{width:26px;height:26px}
+#roulettePointer{position:absolute;left:0;right:0;top:60px;height:40px;border:2px solid #00ff9c;box-shadow:0 0 10px #00ff9c}
+</style>
+</head>
+
+<body>
+<div id="app">
+  <div class="top">
+    <div id="saldo">Saldo: 100.00</div>
+    <div id="free">Giros grátis: 0</div>
+    <div id="bet">Aposta: 1.6</div>
+  </div>
+
+  <div id="grid"></div>
+
+  <div class="controls">
+    <button onclick="spin()">🎰 GIRAR</button>
+    <button onclick="openRoulette()">🎡 ROLETA</button>
+    <button onclick="toggleMute()">🔊 / 🔇</button>
+    <button onclick="changeBet(-1)">➖ Aposta</button>
+    <button onclick="changeBet(1)">➕ Aposta</button>
+
+    <button id="goalBtn" onclick="startGoalTime()" style="display:none;">⚽ GOAL TIME</button>
+  </div>
+
+</div>
+
+<div id="goalTimeOverlay">
+  <div id="goalTimeBox">
+    <div id="gtTitle">⚽ GOAL TIME ⚽</div>
+    <img id="goalTimeImage" src="img/barcafort.png" style="width:100px;margin:10px auto;display:block">
+    <div id="gtBarWrap"><div id="gtBar"></div></div>
+
+  </div>
+</div>
+
+<div id="winBox">
+  <div id="winWord"></div>
+  <div id="winValue"></div>
+</div>
+
+<div id="rouletteOverlay">
+  <div id="rouletteBox">
+    <div id="rouletteTitle">🎡 ROLETA DE PRÊMIOS</div>
+    <div id="rouletteWheel">
+      <div id="rouletteList"></div>
+      <div id="roulettePointer"></div>
+    </div>
+    <button onclick="spinRoulette()">GIRAR ROLETA</button>
+    <button onclick="closeRoulette()">❌ FECHAR</button>
+    <div id="cooldownText"></div>
+</div>
+
+</div>
+
+<script>
+let goalTimeRolling = false;
+let freeSpinBet = null; // aposta fixa dos giros grátis
+let goalTimeActive = false;
+let goalTimeTimer = null;
+let currentSound = null;
+let goalTimeInterval = null;
+let goalTimeSpeed = 200; // 0.2 segundos = 200ms
+
+const apostas = [0.2,0.4,0.8,1.6,3.2,6.4,12.8,25.6,51.2,102.4];
+let apostaIndex = 3; // começa em 1.6
+let aposta = apostas[apostaIndex];
+
+let saldo = 100;
+let freeSpins = 0;
+let muted = false;
+let lastRoulette = 0;
+
+
+const goalTimeImages = [
+  "img/barcafort.png",
+  "img/cbffort.png",
+  "img/hilalfort.png",
+  "img/psgfort.png",
+  "img/santosfort.png"
+];
+
+const goal_time_symbols = ["⚽","🥅","🔥","💥"];
+const goal_time_weights = [50,30,15,5]; // chances
+const sounds = {
+  giro: new Audio("sfx/giro.mp3"),
+  gol: new Audio("sfx/gol.mp3"),
+  roleta: new Audio("sfx/gol2.mp3")
+};
+
+function closeRoulette(){
+  document.getElementById("rouletteOverlay").style.display = "none";
+}
+
+function randomGoalTimePrize(){
+  return symbols[Math.floor(Math.random() * symbols.length)];
+}
+
+
+function playSound(name){
+  if(muted) return;
+
+  if(currentSound){
+    currentSound.pause();
+    currentSound.currentTime = 0;
+  }
+  currentSound = sounds[name];
+  if(currentSound){
+    currentSound.play();
+  }
+}
+function finishGoalTime(prize){
+  clearInterval(goalTimeInterval);
+  goalTimeInterval = null;
+
+  const slots = document.querySelectorAll(".slot img");
+  let grid = [];
+
+  // Aplica o mesmo símbolo e o multiplicador do Goal Time em todos os slots
+  slots.forEach(img=>{
+    img.src = prize.img;
+
+    // pega o multiplicador do Goal Time se existir
+    const multi = goalTimeMultipliers[prize.name] || prize.multi;
+
+    grid.push({
+      img: prize.img,
+      multi: multi,
+      name: prize.name
+    });
+  });
+
+  // Checa vitória usando os novos multiplicadores
+  checkWin(grid);
+
+  setTimeout(()=>{
+    document.getElementById("goalTimeOverlay").style.display = "none";
+    goalTimeActive = false;
+    goalTimeRolling = false;
+    update();
+  }, 1200);
+}
+
+
+
+
+
+function weightedPick(list, weights){
+  const total = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random() * total;
+  for(let i=0;i<list.length;i++){
+    if(r < weights[i]) return list[i];
+    r -= weights[i];
+  }
+}
+
+function startGoalTime(){
+  if(goalTimeRolling) return;
+
+  goalTimeRolling = true;
+  goalTimeActive = true;
+
+  const overlay = document.getElementById("goalTimeOverlay");
+  const imgEl = document.getElementById("goalTimeImage");
+
+  overlay.style.display = "flex";
+  playSound("gol");
+
+  let imgIndex = 0;
+
+  // troca imagem a cada 0.2s
+  goalTimeInterval = setInterval(()=>{
+    imgEl.src = goalTimeImages[imgIndex];
+    imgIndex = (imgIndex + 1) % goalTimeImages.length;
+  }, goalTimeSpeed);
+
+  // gira até ganhar
+  rollGoalTime();
+}
+
+function rollGoalTime(){
+  setTimeout(()=>{
+    let prize = randomGoalTimePrize();
+
+    if(!prize){
+      rollGoalTime();
+    } else {
+      finishGoalTime(prize);
+    }
+  }, 900); // mais lento
+}
+function finishGoalTime(prize){
+  clearInterval(goalTimeInterval);
+  goalTimeInterval = null;
+
+  const slots = document.querySelectorAll(".slot img");
+  let grid = [];
+
+  slots.forEach(img=>{
+    img.src = prize.img; // muda a imagem
+    grid.push({
+      img: prize.img,
+      multi: goalTimeMultipliers[prize.name], // aplica multiplicador do GT
+      name: prize.name
+    });
+  });
+
+  // Checa vitória usando os multiplicadores do GT
+  checkWin(grid);
+
+  confetti();
+  playSound("gol");
+
+  setTimeout(()=>{
+    document.getElementById("goalTimeOverlay").style.display = "none";
+    goalTimeActive = false;
+    goalTimeRolling = false;
+    update();
+  }, 1200);
+}
+
+
+
+
+
+
+const symbols = [
+ {img:"img/alhilal.png", multi:1.3, name:"alhilal"},
+ {img:"img/psg.png", multi:1.495, name:"psg"},
+ {img:"img/barca.png", multi:1.85, name:"barca"},
+ {img:"img/santos.png", multi:2.4, name:"santos"},
+ {img:"img/cbf.png", multi:3, name:"cbf"}
+];
+
+
+
+const goalTimeMultipliers = {
+  alhilal: 6.5,
+  psg: 7.475,
+  barca: 9.25,
+  santos: 12,
+  cbf: 15
+};
+
+
+const roulettePrizes=[
+ {type:"free", text:"25 giros grátis (1.6x)", free:25, bet:1.6, chance:63.9},
+ {type:"free", text:"10 giros grátis (3.2x)", free:10, bet:3.2, chance:15},
+ {type:"free", text:"5 giros grátis (12.8x)", free:5, bet:12.8, chance:10},
+ {type:"saldo", text:"PS5", img:"img/ps5.png", value:3650, chance:5},
+ {type:"saldo", text:"iPhone 17", img:"img/iphone.png", value:11500, chance:3},
+ {type:"saldo", text:"Ninja 300", value:30990, chance:2},
+ {type:"saldo", text:"New Beetle", img:"img/newbettle.png", value:40000, chance:1},
+ {type:"saldo", text:"1kg Ouro", value:881000, chance:0.1}
+];
+
+// mark
+
+const gridEl=document.getElementById("grid");
+for(let i=0;i<9;i++){let d=document.createElement("div");d.className="slot";let img=document.createElement("img");d.appendChild(img);gridEl.appendChild(d);}
+
+function randomSym(){return symbols[Math.floor(Math.random()*symbols.length)];}
+
+function spin(){
+  // Se tiver giros grátis
+  if(freeSpins > 0){
+    freeSpins--;
+
+    // força a aposta do free spin
+    aposta = freeSpinBet;
+  } else {
+    // giro normal
+    if(saldo < aposta) return;
+    saldo -= aposta;
+  }
+
+  playSound("giro");
+
+  if(!goalTimeActive && Math.random() < 0.01){
+    startGoalTime();
+  }
+
+  let slots=document.querySelectorAll(".slot img"),grid=[];
+  slots.forEach(el=>{
+    let s=randomSym();
+    el.src=s.img;
+    grid.push(s);
+  });
+
+  checkWin(grid);
+  if(freeSpins === 0){
+  freeSpinBet = null;
+  }
+  update();
+}
+
+
+
+function checkWin(g){
+ const wins=[[0,1,2],[3,4,5],[6,7,8],[0,4,8],[2,4,6]];
+ wins.forEach(w=>{
+  if(g[w[0]].img===g[w[1]].img && g[w[1]].img===g[w[2]].img){
+    let multi=g[w[0]].multi,ganho=aposta*multi;
+    saldo+=ganho;playSound("gol");confetti();showWin(ganho,multi);
+  }
+ });
+ update();
+}
+
+function checkWinGoalTime(g){
+  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,4,8],[2,4,6]];
+  for(let w of wins){
+    if(g[w[0]].img===g[w[1]].img && g[w[1]].img===g[w[2]].img){
+      let multi = g[w[0]].multi;
+      let ganho = aposta * multi;
+      saldo += ganho;
+      playSound("gol");
+      confetti();
+      showWin(ganho, multi);
+      update();
+      return true; // achou vitória → para o goal time
+    }
+  }
+  return false;
+}
+
+
+function showWin(valor,multi){
+ const box=document.getElementById("winBox"),word=document.getElementById("winWord"),val=document.getElementById("winValue");
+ let txt="Gol!";if(multi>2.25)txt="Super Gol!";if(multi>2.75)txt="Mega Gol!";if(multi>3.5)txt="Ultra Gol!";if(multi>5)txt="GOLEADA!";
+ let current=0,target=valor;word.innerText="VOCÊ GANHOU! "+txt;box.style.display="flex";
+ let anim=setInterval(()=>{current+=target/30;if(current>=target){current=target;clearInterval(anim);}val.innerText="⚽ "+current.toFixed(2);},30);
+ setTimeout(()=>box.style.display="none",2200);
+}
+
+function confetti(){
+ for(let i=0;i<40;i++){
+  let c=document.createElement("div");c.className="confetti";
+  c.style.left=Math.random()*100+"vw";c.style.background=`hsl(${Math.random()*360},100%,50%)`;
+  document.body.appendChild(c);setTimeout(()=>c.remove(),2000);
+ }
+}
+
+const rouletteList=document.getElementById("rouletteList");
+roulettePrizes.forEach(p=>{
+ let d=document.createElement("div");d.className="rouletteItem";
+ d.innerHTML=(p.img?`<img src="${p.img}">`:"")+`<span>${p.text}</span>`;
+ rouletteList.appendChild(d);
+});
+// Duplica para efeito infinito
+for(let k=0;k<6;k++){
+  roulettePrizes.forEach(p=>{
+    let d=document.createElement("div");
+    d.className="rouletteItem";
+    d.innerHTML=(p.img?`<img src="${p.img}">`:"")+`<span>${p.text}</span>`;
+    rouletteList.appendChild(d);
+  });
+}
+
+
+
+
+function openRoulette(){
+ const now=Date.now();
+ const diff=now-lastRoulette;
+ if(diff<300000){
+   let sec=Math.ceil((300000-diff)/1000);
+   document.getElementById("cooldownText").innerText="Aguarde "+sec+"s";
+   document.getElementById("rouletteOverlay").style.display="flex";
+   return;
+ }
+ document.getElementById("cooldownText").innerText="";
+ document.getElementById("rouletteOverlay").style.display="flex";
+}
+
+let rouletteOffset = 0;
+
+function spinRoulette(){
+  const now = Date.now();
+  if(now - lastRoulette < 300000) return;
+
+  lastRoulette = now;
+  playSound("roleta");
+
+  const list = document.getElementById("rouletteList");
+
+  // Sorteio com peso
+  let total = roulettePrizes.reduce((s,p)=>s+p.chance,0);
+  let r = Math.random() * total, acc = 0, prize = null;
+  for(let p of roulettePrizes){
+    acc += p.chance;
+    if(r <= acc){ prize = p; break; }
+  }
+
+  const prizeIndex = roulettePrizes.indexOf(prize);
+  const itemHeight = 40;
+  const totalItems = roulettePrizes.length * 6;
+  const centerBase = Math.floor(totalItems / 2);
+
+  // Calcula nova posição
+  rouletteOffset = (centerBase + prizeIndex) * itemHeight;
+
+  // Reset invisível
+  list.style.transition = "none";
+  list.style.transform = `translateY(-${rouletteOffset}px)`;
+  list.offsetHeight;
+
+  // Agora gira mais algumas voltas
+  const extraLoops = 3 * roulettePrizes.length * itemHeight;
+  list.style.transition = "transform 3s cubic-bezier(.17,.67,.18,.97)";
+  list.style.transform = `translateY(-${rouletteOffset + extraLoops}px)`;
+
+  setTimeout(()=>{
+    if(prize.type === "free"){
+      freeSpins += prize.free;
+      freeSpinBet = prize.bet;
+      aposta = prize.bet;
+ }else{
+      saldo += prize.value;
+    }
+
+    document.getElementById("rouletteOverlay").style.display = "none";
+    update();
+  }, 3000);
+}
+
+
+function update(){
+ document.getElementById("saldo").innerText="Saldo: "+saldo.toFixed(2);
+ document.getElementById("free").innerText="Giros grátis: "+freeSpins;
+ document.getElementById("bet").innerText = "Aposta: " + aposta.toFixed(2);
+}
+
+function changeBet(dir){
+  if(freeSpins > 0) return; // bloqueia mudar aposta durante giros grátis
+  apostaIndex += dir;
+  if(apostaIndex < 0) apostaIndex = 0;
+  if(apostaIndex >= apostas.length) apostaIndex = apostas.length-1;
+  aposta = apostas[apostaIndex];
+  update();
+}
+
+
+function toggleMute(){
+  muted = !muted;
+  document.querySelector('.controls button:nth-child(3)').innerText = muted ? "🔇" : "🔊";
+}
+
+
+document.addEventListener("keydown", e=>{
+  if(e.key.toLowerCase() === "p"){
+    startGoalTime();
+  }
+});
+// Mostrar botão GOAL TIME só no mobile
+function isMobile(){
+  return /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+}
+
+if(isMobile()){
+  document.getElementById("goalBtn").style.display = "block";
+}
+</script>
+</body>
+</html>
