@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Skull Page</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+min-height:100vh;
+overflow:hidden;
+position:relative;
+background:#ffffff;
+border:8px solid yellow;
+}
+
+/* fundo gradiente girando */
+
+body::before{
+content:"";
+position:absolute;
+inset:-50%;
+
+background: conic-gradient(
+#ffffff,
+#fff2a0,
+#c9a000,
+#fff2a0,
+#ffffff
+);
+
+animation:spinGradient 18s linear infinite;
+z-index:-1;
+}
+
+@keyframes spinGradient{
+from{ transform:rotate(0deg);}
+to{ transform:rotate(360deg);}
+}
+
+/* borda neon */
+
+body{
+box-shadow:
+0 0 10px yellow,
+0 0 30px yellow,
+0 0 60px yellow inset;
+}
+
+/* caveiras */
+
+.skull{
+position:absolute;
+font-size:46px;
+
+text-shadow:
+0 0 6px yellow,
+0 0 15px yellow,
+0 0 35px yellow,
+0 0 60px yellow;
+}
+
+.top-left{top:15px;left:15px;}
+.top-right{top:15px;right:15px;}
+.bottom-left{bottom:15px;left:15px;}
+.bottom-right{bottom:15px;right:15px;}
+
+/* fumaça */
+
+.smoke{
+position:absolute;
+width:90px;
+height:90px;
+
+background: radial-gradient(circle,
+rgba(160,160,160,0.55) 0%,
+rgba(160,160,160,0.25) 40%,
+rgba(160,160,160,0) 70%);
+
+border-radius:50%;
+
+animation:smokeMove linear infinite;
+}
+
+@keyframes smokeMove{
+
+0%{
+transform:translateY(0) scale(0.4);
+opacity:0.8;
+}
+
+50%{
+opacity:0.5;
+}
+
+100%{
+transform:translateY(-180px) scale(1.8);
+opacity:0;
+}
+
+}
+
+/* fumaça múltipla */
+
+.smoke1{top:40px;left:20px;animation-duration:4s;}
+.smoke2{top:50px;left:45px;animation-duration:5s;}
+.smoke3{top:60px;left:70px;animation-duration:6s;}
+
+.smoke4{top:40px;right:20px;animation-duration:4s;}
+.smoke5{top:50px;right:45px;animation-duration:5s;}
+.smoke6{top:60px;right:70px;animation-duration:6s;}
+
+.smoke7{bottom:40px;left:20px;animation-duration:4s;}
+.smoke8{bottom:50px;left:45px;animation-duration:5s;}
+.smoke9{bottom:60px;left:70px;animation-duration:6s;}
+
+.smoke10{bottom:40px;right:20px;animation-duration:4s;}
+.smoke11{bottom:50px;right:45px;animation-duration:5s;}
+.smoke12{bottom:60px;right:70px;animation-duration:6s;}
+
+</style>
+</head>
+
+<body>
+
+<div class="skull top-left">💀</div>
+<div class="skull top-right">💀</div>
+<div class="skull bottom-left">💀</div>
+<div class="skull bottom-right">💀</div>
+
+<div class="smoke smoke1"></div>
+<div class="smoke smoke2"></div>
+<div class="smoke smoke3"></div>
+
+<div class="smoke smoke4"></div>
+<div class="smoke smoke5"></div>
+<div class="smoke smoke6"></div>
+
+<div class="smoke smoke7"></div>
+<div class="smoke smoke8"></div>
+<div class="smoke smoke9"></div>
+
+<div class="smoke smoke10"></div>
+<div class="smoke smoke11"></div>
+<div class="smoke smoke12"></div>
+
+</body>
+</html>
